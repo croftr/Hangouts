@@ -5,12 +5,10 @@ let db: Database.Database | null = null;
 
 export function getDb() {
   if (!db) {
-    // In production (Vercel), the database is in the public directory and must be read-only
-    // In development, we can use WAL mode and the database is in the project root
+    // In production (Vercel), the database must be read-only
+    // In development, we can use WAL mode
     const isProduction = process.env.NODE_ENV === 'production';
-    const dbPath = isProduction
-      ? path.join(process.cwd(), 'public', 'messages.db')
-      : path.join(process.cwd(), 'messages.db');
+    const dbPath = path.join(process.cwd(), 'messages.db');
 
     db = new Database(dbPath, {
       readonly: isProduction,
