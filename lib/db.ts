@@ -5,9 +5,20 @@ let db: Database.Database | null = null;
 
 export function getDb() {
   if (!db) {
+    // In production (Vercel), the database is in the project root and must be read-only
+    // In development, we can use WAL mode
     const dbPath = path.join(process.cwd(), 'messages.db');
-    db = new Database(dbPath);
-    db.pragma('journal_mode = WAL');
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    db = new Database(dbPath, {
+      readonly: isProduction,
+      fileMustExist: true
+    });
+
+    // WAL mode only works in development (requires write access)
+    if (!isProduction) {
+      db.pragma('journal_mode = WAL');
+    }
   }
   return db;
 }
