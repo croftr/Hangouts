@@ -23,6 +23,13 @@ export default function UserPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const getDisplayName = (email: string, name: string): string => {
+    if (email === 'bobby@robincroft.com') {
+      return 'Bob Bot';
+    }
+    return name;
+  };
+
   useEffect(() => {
     fetchUserStats();
   }, [email]);
@@ -95,7 +102,7 @@ export default function UserPage() {
         </Link>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-6">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{stats.name}</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{getDisplayName(stats.email, stats.name)}</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">{stats.email}</p>
 
           <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-6">

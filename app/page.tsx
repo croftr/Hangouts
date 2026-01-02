@@ -147,6 +147,13 @@ export default function Home() {
     return tagsString.split(',').map(t => t.trim()).filter(t => t) as Tag[];
   };
 
+  const getDisplayName = (email: string, name: string): string => {
+    if (email === 'bobby@robincroft.com') {
+      return 'Bob Bot';
+    }
+    return name;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -286,7 +293,7 @@ export default function Home() {
                         href={`/user/${encodeURIComponent(message.creator_email)}`}
                         className="font-semibold text-lg text-blue-600 dark:text-blue-400 hover:underline"
                       >
-                        {message.creator_name}
+                        {getDisplayName(message.creator_email, message.creator_name)}
                       </Link>
                       <p className="text-sm text-gray-500 dark:text-gray-400">{message.creator_email}</p>
                     </div>
