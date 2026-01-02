@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-type Tag = 'Insult' | 'Funny' | 'Political' | 'Sport' | 'Computers' | 'Transport' | 'Food' | 'Cables' | 'Animals' | 'Woke' | 'Politically Incorrect' | 'Gay' | 'Poor Grammar' | 'Geeky' | 'Profound' | 'Conversation Stopper';
+type Tag = 'Insult' | 'Funny' | 'Political' | 'Sport' | 'Computers' | 'Transport' | 'Food' | 'Cables' | 'Animals' | 'Woke' | 'Politically Incorrect' | 'Gay' | 'Poor Grammar' | 'Geeky' | 'Profound' | 'Death Update' | 'Correction' | 'Music' | 'Conversation Stopper';
 
-const ALL_TAGS: Tag[] = ['Insult', 'Funny', 'Political', 'Sport', 'Computers', 'Transport', 'Food', 'Cables', 'Animals', 'Woke', 'Politically Incorrect', 'Gay', 'Poor Grammar', 'Geeky', 'Profound', 'Conversation Stopper'];
+const ALL_TAGS: Tag[] = ['Insult', 'Funny', 'Political', 'Sport', 'Computers', 'Transport', 'Food', 'Cables', 'Animals', 'Woke', 'Politically Incorrect', 'Gay', 'Poor Grammar', 'Geeky', 'Profound', 'Death Update', 'Correction', 'Music', 'Conversation Stopper'];
 
 const TAG_COLORS: Record<Tag, string> = {
   'Insult': 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
@@ -23,6 +23,9 @@ const TAG_COLORS: Record<Tag, string> = {
   'Poor Grammar': 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-300',
   'Geeky': 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300',
   'Profound': 'bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300',
+  'Death Update': 'bg-stone-100 dark:bg-stone-900/30 text-stone-800 dark:text-stone-300',
+  'Correction': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300',
+  'Music': 'bg-fuchsia-100 dark:bg-fuchsia-900/30 text-fuchsia-800 dark:text-fuchsia-300',
   'Conversation Stopper': 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300',
 };
 
@@ -42,6 +45,9 @@ const TAG_ICONS: Record<Tag, string> = {
   'Poor Grammar': '📝',
   'Geeky': '🤓',
   'Profound': '💭',
+  'Death Update': '⚰️',
+  'Correction': '✅',
+  'Music': '🎵',
   'Conversation Stopper': '🛑',
 };
 

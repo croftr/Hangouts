@@ -11,6 +11,7 @@
     "add-tags-column": "node scripts/add-tags-column.js",
     "analyze-tags": "node scripts/analyze-tags.js",
     "reanalyze-all-tags": "node scripts/reanalyze-all-tags.js",
+    "add-new-tags": "node scripts/add-new-tags.js",
     "clear-tags": "node scripts/clear-tags.js"
   },
   "dependencies": {
