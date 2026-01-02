@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       limit: parseInt(searchParams.get('limit') || '50'),
     };
 
-    const result = searchMessages(params);
+    const result = await searchMessages(params);
 
     return NextResponse.json({
       success: true,

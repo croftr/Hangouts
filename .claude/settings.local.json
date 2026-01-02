@@ -6,7 +6,13 @@
       "Bash(npm run import-messages:*)",
       "Bash(npm run dev:*)",
       "Bash(npm run add-tags-column:*)",
-      "Bash(npm run clear-tags:*)"
+      "Bash(npm run clear-tags:*)",
+      "Bash(git add:*)",
+      "Bash(git restore:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(sqlite3:*)",
+      "Bash(node scripts/optimize-db.js:*)"
     ]
   }
 }

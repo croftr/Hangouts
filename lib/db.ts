@@ -1,14 +1,54 @@
 import Database from 'better-sqlite3';
 import path from 'path';
+import fs from 'fs';
+import { download } from '@vercel/blob';
 
 let db: Database.Database | null = null;
+let dbInitialized = false;
 
-export function getDb() {
+async function ensureDatabase() {
+  if (dbInitialized) return;
+
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (isProduction) {
+    // In production, download from Vercel Blob if not already cached
+    const tmpDbPath = '/tmp/messages.db';
+
+    if (!fs.existsSync(tmpDbPath)) {
+      const blobUrl = process.env.DATABASE_BLOB_URL;
+      if (!blobUrl) {
+        throw new Error('DATABASE_BLOB_URL environment variable is not set');
+      }
+
+      console.log('Downloading database from Vercel Blob...');
+      const { downloadUrl } = await download(blobUrl, {
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+
+      // Fetch and save to /tmp
+      const response = await fetch(downloadUrl);
+      const buffer = await response.arrayBuffer();
+      fs.writeFileSync(tmpDbPath, Buffer.from(buffer));
+      console.log('Database downloaded successfully');
+    } else {
+      console.log('Using cached database from /tmp');
+    }
+  }
+
+  dbInitialized = true;
+}
+
+export async function getDb() {
+  await ensureDatabase();
+
   if (!db) {
     // In production (Vercel), the database must be read-only
     // In development, we can use WAL mode
     const isProduction = process.env.NODE_ENV === 'production';
-    const dbPath = path.join(process.cwd(), 'messages.db');
+    const dbPath = isProduction
+      ? '/tmp/messages.db'
+      : path.join(process.cwd(), 'messages.db');
 
     db = new Database(dbPath, {
       readonly: isProduction,
@@ -23,8 +63,8 @@ export function getDb() {
   return db;
 }
 
-export function initDb() {
-  const database = getDb();
+export async function initDb() {
+  const database = await getDb();
 
   database.exec(`
     CREATE TABLE IF NOT EXISTS messages (
@@ -73,8 +113,8 @@ export interface SearchParams {
   limit?: number;
 }
 
-export function searchMessages(params: SearchParams): { messages: Message[]; total: number } {
-  const database = getDb();
+export async function searchMessages(params: SearchParams): Promise<{ messages: Message[]; total: number }> {
+  const database = await getDb();
   const {
     query = '',
     searchBy = 'both',
