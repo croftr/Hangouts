@@ -134,8 +134,12 @@ export async function searchMessages(params: SearchParams): Promise<{ messages: 
   // Add tag filtering
   if (tags.length > 0) {
     const tagConditions = tags.map(tag => {
-      queryParams.push(`%${tag}%`);
-      return 'tags LIKE ?';
+      // Use word boundaries to match exact tag names
+      // Match: start of string or after comma, tag name, end of string or before comma
+      queryParams.push(`%${tag},%`);  // Tag at start or middle: "Sport," or ", Sport,"
+      queryParams.push(`%, ${tag}`);  // Tag at end: ", Sport"
+      queryParams.push(tag);           // Tag is the only one: "Sport"
+      return '(tags LIKE ? OR tags LIKE ? OR tags = ?)';
     });
     conditions.push('(' + tagConditions.join(' OR ') + ')');
   }
