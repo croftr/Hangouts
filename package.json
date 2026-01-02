@@ -10,6 +10,7 @@
     "import-messages": "node scripts/import-messages.js",
     "add-tags-column": "node scripts/add-tags-column.js",
     "analyze-tags": "node scripts/analyze-tags.js",
+    "reanalyze-all-tags": "node scripts/reanalyze-all-tags.js",
     "clear-tags": "node scripts/clear-tags.js"
   },
   "dependencies": {

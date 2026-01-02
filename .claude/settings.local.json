@@ -14,7 +14,8 @@
       "Bash(sqlite3:*)",
       "Bash(node scripts/optimize-db.js:*)",
       "Bash(echo:*)",
-      "Bash(gzip:*)"
+      "Bash(gzip:*)",
+      "Bash(node scripts/fix-conversation-stoppers.js:*)"
     ]
   }
 }

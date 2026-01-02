@@ -2,12 +2,16 @@ const Anthropic = require('@anthropic-ai/sdk');
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const AI_TAGS = ['Insult', 'Funny', 'Political', 'Sport', 'Computers', 'Transport', 'Food', 'Cables', 'Animals', 'Woke', 'Politically Incorrect', 'Gay', 'Poor Grammar', 'Geeky', 'Profound'];
-const ALL_TAGS = ['Insult', 'Funny', 'Political', 'Sport', 'Computers', 'Transport', 'Food', 'Cables', 'Animals', 'Woke', 'Politically Incorrect', 'Gay', 'Poor Grammar', 'Geeky', 'Profound', 'Conversation Stopper'];
+// All AI-analyzed tags (excluding Conversation Stopper which is computed separately)
+const AI_TAGS = [
+  'Insult', 'Funny', 'Political', 'Sport', 'Computers', 'Transport',
+  'Food', 'Cables', 'Animals', 'Woke', 'Politically Incorrect', 'Gay',
+  'Poor Grammar', 'Geeky', 'Profound'
+];
 
-const BATCH_SIZE = 50; // Process more messages per request
-const CONCURRENT_REQUESTS = 3; // Fewer concurrent requests
-const MAX_REQUESTS_PER_MINUTE = 48; // Stay safely under 50/min limit
+const BATCH_SIZE = 50;
+const CONCURRENT_REQUESTS = 3;
+const MAX_REQUESTS_PER_MINUTE = 48;
 
 async function analyzeMessageBatch(client, messages) {
   const messagesText = messages.map((msg, idx) =>
@@ -85,86 +89,9 @@ async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function detectConversationStoppers(db) {
-  console.log('Analyzing message timestamps to detect conversation stoppers...');
+async function reanalyzeAllTags() {
+  console.log('Re-analyzing all messages with updated tag list...\n');
 
-  // Get all messages ordered by topic and timestamp
-  const messages = db.prepare(`
-    SELECT id, topic_id, created_timestamp, tags
-    FROM messages
-    ORDER BY topic_id, created_timestamp
-  `).all();
-
-  const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
-  let conversationStoppers = 0;
-
-  // Group by topic and check gaps
-  const messagesByTopic = {};
-  for (const msg of messages) {
-    if (!messagesByTopic[msg.topic_id]) {
-      messagesByTopic[msg.topic_id] = [];
-    }
-    messagesByTopic[msg.topic_id].push(msg);
-  }
-
-  const updateStmt = db.prepare('UPDATE messages SET tags = ? WHERE id = ?');
-  const updateMany = db.transaction((updates) => {
-    for (const update of updates) {
-      updateStmt.run(update.tags, update.id);
-    }
-  });
-
-  const updates = [];
-
-  for (const topicId in messagesByTopic) {
-    const topicMessages = messagesByTopic[topicId];
-
-    for (let i = 0; i < topicMessages.length - 1; i++) {
-      const currentMsg = topicMessages[i];
-      const nextMsg = topicMessages[i + 1];
-
-      const timeDiff = nextMsg.created_timestamp - currentMsg.created_timestamp;
-
-      if (timeDiff >= TWO_HOURS_MS) {
-        // This message is a conversation stopper
-        let currentTags = currentMsg.tags ? currentMsg.tags.split(',').map(t => t.trim()).filter(t => t) : [];
-
-        // Add "Conversation Stopper" if not already present
-        if (!currentTags.includes('Conversation Stopper')) {
-          currentTags.push('Conversation Stopper');
-          updates.push({
-            id: currentMsg.id,
-            tags: currentTags.join(', ')
-          });
-          conversationStoppers++;
-        }
-      }
-    }
-
-    // Check if the last message in a topic is a stopper (no follow-up at all)
-    if (topicMessages.length > 0) {
-      const lastMsg = topicMessages[topicMessages.length - 1];
-      let lastTags = lastMsg.tags ? lastMsg.tags.split(',').map(t => t.trim()).filter(t => t) : [];
-
-      if (!lastTags.includes('Conversation Stopper')) {
-        lastTags.push('Conversation Stopper');
-        updates.push({
-          id: lastMsg.id,
-          tags: lastTags.join(', ')
-        });
-        conversationStoppers++;
-      }
-    }
-  }
-
-  updateMany(updates);
-  console.log(`Tagged ${conversationStoppers} messages as "Conversation Stopper"`);
-}
-
-async function analyzeTags() {
-  console.log('Starting tag analysis...');
-
-  // Check for API key
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     console.error('Error: ANTHROPIC_API_KEY environment variable is not set.');
@@ -177,18 +104,25 @@ async function analyzeTags() {
   const db = new Database(dbPath);
 
   try {
-    // Get total count of messages without tags
-    const { count } = db.prepare("SELECT COUNT(*) as count FROM messages WHERE tags IS NULL OR tags = ''").get();
-    console.log(`Found ${count} messages to analyze`);
+    // Get all messages
+    const { count } = db.prepare("SELECT COUNT(*) as count FROM messages").get();
+    console.log(`Total messages to analyze: ${count.toLocaleString()}\n`);
 
-    if (count === 0) {
-      console.log('All messages already have tags!');
-      db.close();
-      return;
-    }
+    // First, preserve Conversation Stopper tags and clear AI tags
+    console.log('Preserving Conversation Stopper tags and clearing AI tags...');
+    const messages = db.prepare('SELECT id, tags FROM messages').all();
 
-    // Prepare update statement
     const updateStmt = db.prepare('UPDATE messages SET tags = ? WHERE id = ?');
+    const preserveTransaction = db.transaction((msgs) => {
+      for (const msg of msgs) {
+        const existingTags = msg.tags ? msg.tags.split(',').map(t => t.trim()).filter(t => t) : [];
+        const conversationStopperOnly = existingTags.filter(t => t === 'Conversation Stopper');
+        updateStmt.run(conversationStopperOnly.join(', '), msg.id);
+      }
+    });
+
+    preserveTransaction(messages);
+    console.log('✓ AI tags cleared, Conversation Stopper tags preserved\n');
 
     let processed = 0;
     let offset = 0;
@@ -196,7 +130,7 @@ async function analyzeTags() {
     let minuteStartTime = Date.now();
 
     while (processed < count) {
-      // Rate limiting: wait if we've hit the limit for this minute
+      // Rate limiting
       if (requestsThisMinute >= MAX_REQUESTS_PER_MINUTE) {
         const elapsed = Date.now() - minuteStartTime;
         const waitTime = Math.max(0, 60000 - elapsed);
@@ -209,24 +143,23 @@ async function analyzeTags() {
       }
 
       // Fetch a batch of messages
-      const messages = db.prepare(`
-        SELECT id, text
+      const messageBatch = db.prepare(`
+        SELECT id, text, tags
         FROM messages
-        WHERE tags IS NULL OR tags = ''
         LIMIT ? OFFSET ?
       `).all(BATCH_SIZE * CONCURRENT_REQUESTS, offset);
 
-      if (messages.length === 0) break;
+      if (messageBatch.length === 0) break;
 
       // Split into concurrent batches
       const batches = [];
-      for (let i = 0; i < messages.length; i += BATCH_SIZE) {
-        batches.push(messages.slice(i, i + BATCH_SIZE));
+      for (let i = 0; i < messageBatch.length; i += BATCH_SIZE) {
+        batches.push(messageBatch.slice(i, i + BATCH_SIZE));
       }
 
       // Process batches concurrently
       const batchPromises = batches.map(async (batch, batchIdx) => {
-        await sleep(batchIdx * 400); // Stagger requests more
+        await sleep(batchIdx * 400);
         return analyzeMessageBatch(client, batch);
       });
 
@@ -244,48 +177,52 @@ async function analyzeTags() {
       batches.forEach((batch, batchIdx) => {
         const tagResults = results[batchIdx];
         batch.forEach((msg, idx) => {
-          const tags = tagResults[idx] || [];
+          const newAITags = tagResults[idx] || [];
+
+          // Preserve Conversation Stopper tag
+          const existingTags = msg.tags ? msg.tags.split(',').map(t => t.trim()).filter(t => t) : [];
+          const conversationStopperTag = existingTags.filter(t => t === 'Conversation Stopper');
+
+          // Combine AI tags with Conversation Stopper
+          const allTags = [...newAITags, ...conversationStopperTag];
+
           updates.push({
             id: msg.id,
-            tags: tags.join(', ')
+            tags: allTags.join(', ')
           });
         });
       });
 
       updateMany(updates);
-      processed += messages.length;
-      offset += messages.length;
+      processed += messageBatch.length;
+      offset += messageBatch.length;
 
-      console.log(`Progress: ${processed} / ${count} messages analyzed (${Math.round(processed/count*100)}%)`);
+      console.log(`Progress: ${processed.toLocaleString()} / ${count.toLocaleString()} messages analyzed (${Math.round(processed/count*100)}%)`);
 
-      // Rate limiting - wait a bit between batches
       await sleep(500);
     }
 
-    console.log('\n=== AI Analysis Complete ===');
-    console.log(`Total messages processed: ${processed}`);
-
-    // Now detect "Conversation Stopper" tags
-    console.log('\n=== Detecting Conversation Stoppers ===');
-    await detectConversationStoppers(db);
+    console.log('\n=== Re-analysis Complete ===');
+    console.log(`Total messages processed: ${processed.toLocaleString()}\n`);
 
     // Show tag statistics
-    console.log('\n=== Tag Statistics ===');
-    for (const tag of ALL_TAGS) {
+    console.log('=== Tag Statistics ===');
+    const allTags = [...AI_TAGS, 'Conversation Stopper'];
+    for (const tag of allTags) {
       const { count: tagCount } = db.prepare(`
         SELECT COUNT(*) as count
         FROM messages
-        WHERE tags LIKE ?
-      `).get(`%${tag}%`);
-      console.log(`${tag}: ${tagCount} messages`);
+        WHERE tags LIKE ? OR tags LIKE ? OR tags = ?
+      `).get(`%${tag},%`, `%, ${tag}`, tag);
+      console.log(`${tag}: ${tagCount.toLocaleString()} messages`);
     }
 
     const { count: untaggedCount } = db.prepare(`
       SELECT COUNT(*) as count
       FROM messages
-      WHERE tags = ''
+      WHERE tags = '' OR tags IS NULL
     `).get();
-    console.log(`Untagged: ${untaggedCount} messages`);
+    console.log(`Untagged: ${untaggedCount.toLocaleString()} messages`);
 
     db.close();
   } catch (error) {
@@ -295,4 +232,4 @@ async function analyzeTags() {
   }
 }
 
-analyzeTags();
+reanalyzeAllTags();

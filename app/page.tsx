@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 
-type Tag = 'Insult' | 'Funny' | 'Political' | 'Sport' | 'Computers' | 'Transport' | 'Food' | 'Cables' | 'Animals' | 'Woke' | 'Politically Incorrect' | 'Gay' | 'Conversation Stopper';
+type Tag = 'Insult' | 'Funny' | 'Political' | 'Sport' | 'Computers' | 'Transport' | 'Food' | 'Cables' | 'Animals' | 'Woke' | 'Politically Incorrect' | 'Gay' | 'Poor Grammar' | 'Geeky' | 'Profound' | 'Conversation Stopper';
 
-const ALL_TAGS: Tag[] = ['Insult', 'Funny', 'Political', 'Sport', 'Computers', 'Transport', 'Food', 'Cables', 'Animals', 'Woke', 'Politically Incorrect', 'Gay', 'Conversation Stopper'];
+const ALL_TAGS: Tag[] = ['Insult', 'Funny', 'Political', 'Sport', 'Computers', 'Transport', 'Food', 'Cables', 'Animals', 'Woke', 'Politically Incorrect', 'Gay', 'Poor Grammar', 'Geeky', 'Profound', 'Conversation Stopper'];
 
 const TAG_COLORS: Record<Tag, string> = {
   'Insult': 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
@@ -19,6 +19,9 @@ const TAG_COLORS: Record<Tag, string> = {
   'Woke': 'bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-300',
   'Politically Incorrect': 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300',
   'Gay': 'bg-violet-100 dark:bg-violet-900/30 text-violet-800 dark:text-violet-300',
+  'Poor Grammar': 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-300',
+  'Geeky': 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300',
+  'Profound': 'bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300',
   'Conversation Stopper': 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300',
 };
 
@@ -35,6 +38,9 @@ const TAG_ICONS: Record<Tag, string> = {
   'Woke': '✊',
   'Politically Incorrect': '🚫',
   'Gay': '🌈',
+  'Poor Grammar': '📝',
+  'Geeky': '🤓',
+  'Profound': '💭',
   'Conversation Stopper': '🛑',
 };
 
