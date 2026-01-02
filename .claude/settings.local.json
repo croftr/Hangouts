@@ -12,7 +12,9 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(sqlite3:*)",
-      "Bash(node scripts/optimize-db.js:*)"
+      "Bash(node scripts/optimize-db.js:*)",
+      "Bash(echo:*)",
+      "Bash(gzip:*)"
     ]
   }
 }
