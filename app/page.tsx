@@ -73,7 +73,6 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
-  const [searchBy, setSearchBy] = useState<'creator' | 'text' | 'both'>('both');
   const [sortBy, setSortBy] = useState<'date_asc' | 'date_desc'>('date_desc');
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [page, setPage] = useState(1);
@@ -87,7 +86,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchMessages();
-  }, [page, sortBy, searchBy, selectedTags]);
+  }, [page, sortBy, selectedTags]);
 
   const fetchMessages = async () => {
     setLoading(true);
@@ -96,7 +95,7 @@ export default function Home() {
     try {
       const params = new URLSearchParams({
         query,
-        searchBy,
+        searchBy: 'text',
         sortBy,
         page: page.toString(),
         limit: '50',
@@ -162,36 +161,18 @@ export default function Home() {
         {/* Search and Filter Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
           <form onSubmit={handleSearch} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2">
-                <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Search
-                </label>
-                <input
-                  id="search"
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search messages..."
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="searchBy" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Search By
-                </label>
-                <select
-                  id="searchBy"
-                  value={searchBy}
-                  onChange={(e) => setSearchBy(e.target.value as 'creator' | 'text' | 'both')}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="both">Both</option>
-                  <option value="creator">Creator</option>
-                  <option value="text">Message Text</option>
-                </select>
-              </div>
+            <div>
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Search Message Content
+              </label>
+              <input
+                id="search"
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search messages..."
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
 
             <div className="flex items-end gap-4">
