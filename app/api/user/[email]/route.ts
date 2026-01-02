@@ -3,10 +3,11 @@ import { getDb, ALL_TAGS, type Tag } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { email: string } }
+  { params }: { params: Promise<{ email: string }> }
 ) {
   try {
-    const email = decodeURIComponent(params.email);
+    const { email: rawEmail } = await params;
+    const email = decodeURIComponent(rawEmail);
     const db = await getDb();
 
     // Get user name and total message count
