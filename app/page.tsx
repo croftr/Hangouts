@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 type Tag = 'Insult' | 'Funny' | 'Political' | 'Sport' | 'Computers' | 'Transport' | 'Food' | 'Cables' | 'Animals' | 'Woke' | 'Politically Incorrect' | 'Gay' | 'Poor Grammar' | 'Geeky' | 'Profound' | 'Conversation Stopper';
 
@@ -281,7 +282,12 @@ export default function Home() {
                 <div key={message.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">{message.creator_name}</h3>
+                      <Link
+                        href={`/user/${encodeURIComponent(message.creator_email)}`}
+                        className="font-semibold text-lg text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        {message.creator_name}
+                      </Link>
                       <p className="text-sm text-gray-500 dark:text-gray-400">{message.creator_email}</p>
                     </div>
                     <div className="text-right">
