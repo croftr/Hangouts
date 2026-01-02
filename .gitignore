@@ -36,6 +36,7 @@ yarn-error.log*
 next-env.d.ts
 
 # database
-# *.db - Commented out to allow committing messages.db for Vercel deployment
+*.db
+!messages.db.gz
 *.db-shm
 *.db-wal
