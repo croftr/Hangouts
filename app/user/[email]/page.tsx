@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 type Tag = 'Insult' | 'Funny' | 'Political' | 'Sport' | 'Computers' | 'Transport' | 'Food' | 'Cables' | 'Animals' | 'Woke' | 'Politically Incorrect' | 'Gay' | 'Poor Grammar' | 'Geeky' | 'Profound' | 'Conversation Stopper';
 
@@ -66,6 +67,41 @@ export default function UserPage() {
       return 'Bob Bot';
     }
     return name;
+  };
+
+  const getAvatarPath = (email: string): string | null => {
+    if (email === 'bobby@robincroft.com') {
+      return '/bob-bot-avatar.png';
+    }
+    if (email === 'gmitlimited@gmail.com') {
+      return '/gary.png';
+    }
+    if (email === 'angelajanecroft@gmail.com') {
+      return '/rob.jpg';
+    }
+    if (email === 'HoopandKelp@gmail.com') {
+      return '/mikey.webp';
+    }
+    if (email === 'barooahn@gmail.com') {
+      return '/Nick-Barooah.webp';
+    }
+    return null;
+  };
+
+  const getBio = (email: string): string | null => {
+    if (email === 'HoopandKelp@gmail.com') {
+      return "A high-functioning cynic with hedonistic features, Mikey serves as the group's reality anchor and sardonic shield. With over 47,000 messages to his name, he functions simultaneously as the group's jester and superego—keeping everyone in check with his relentless sarcasm and blunt wit. When others spiral into absurdity, Mikey drags them back to mundane reality, albeit begrudgingly. His weekend plans revolve around his carefully curated wine selection (Hardys Crest Cabernet Sauvignon, naturally) and the occasional brave venture into bad weather. A master of the preemptive strike in conversation, he maintains control by lowering the seriousness before anyone else can. Despite his role as the observer above the fray, he's slowly becoming the very thing he mocks—these days, he can only do 'dad dancing.'";
+    }
+    if (email === 'angelajanecroft@gmail.com') {
+      return "A technological stoic with over 35,000 messages, Rob serves as the Ego of the group—the rational mediator attempting to balance chaos with logic, technical solutions, and moral observation. As the resident 'Tech Support Father Figure,' he believes that with the right USB-C cable or API endpoint, human suffering can be mitigated. A reluctant ascetic who views hunger as 'nothing to fear,' he oscillates between complaining about poor service (fruit salad for lunch in first class?) and stoically accepting his fate with moral superiority. Rob is the Archivist of Disaster, documenting rather than screaming when Noah throws yet another tablet into a farmer's field (they have 6... had 6). He acts as the moral compass that points slightly off-north, asking logistical questions like 'How the hell did the mattress get up?' while missing the inherent comedy. A modern Sisyphus pushing a boulder of electronics up a hill, he loves a good ding dong (debate) and critiques Gary's 'meat swets' with detached bemusement. No amount of JSON placeholders will fix his friends, but he keeps trying anyway.";
+    }
+    if (email === 'barooahn@gmail.com') {
+      return "A techno-optimist with conflict-avoidant tendencies, Nicholas functions as the group's diplomat and participatory observer with approximately 5,200 messages. As the 'Agreeable Mirror,' his lexicon is dominated by affirmations—'Perfect!', 'Ha ha. I like it.', 'Totally.'—seeking harmony and consensus where others create chaos. The most stable member of the ecosystem, he serves as the comedic straight man, providing the 'normal' baseline against which Gary's gout and Mikey's sarcasm are measured. A future-oriented early adopter consumed by media and gadgets (Andor, The Peripheral, 1899, Mr. Robot, AR glasses with screens), he looks forward while Gary stays stuck in childhood and Mikey in cynical present. Often standing on the threshold as the reluctant participant, he asks 'How do I join?' rather than breaking the rules, politely engaging with inanity ('It's a nice white dot as far as white dots go') to make others feel heard. The superego's apprentice and the group's TV Guide, he maintains their cultural literacy by watching The Peripheral so the others don't have to. His ability to find things 'good' and laugh at bad jokes ensures survival, though he desperately needs to practice saying 'That gif was terrible, Gary' instead of 'Ha ha.'";
+    }
+    if (email === 'gmitlimited@gmail.com') {
+      return "An impulsive hedonist with somatic manifestations of stress, Gary is the Id of the group with over 41,000 messages providing raw material for others to dissect. The group mascot and bewildered protagonist, he's trapped in a classic binge-purge cycle—'I'm booze free this weekend as I felt a twinge of gout after last weekends binge, what a twat'—viewing his body as both vehicle for pleasure and traitorous entity. His plea 'Stop talking about booze please 😂' reveals the fragility of his resolve; he knows he cannot resist, so he begs the environment to remove temptation. A Peter Pan complex drives his constant regression to simpler times—reminiscing about childhood fishing trips ('Had a little tent and flasks an tha... think I was 8ish... No! 10'), joking about whizz and coke, greeting with 'Wassap monkey pluckers!!!' Narrating life with an external locus of control ('The mattress came up the side of the house', 'The story of my life'), he's the passive participant bewildered by chaos he creates. At high risk of repetitive gout flare-ups and social embarrassment, he bounces back from cliche films and worldly IT outages with undiminished enthusiasm. He needs to embrace the Dad archetype—hoisting mattresses and joining wine clubs is his reality now. The monkey plucker days are behind him. (Hydration strictly for the gout.)";
+    }
+    return null;
   };
 
   useEffect(() => {
@@ -140,8 +176,28 @@ export default function UserPage() {
         </Link>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-6">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{getDisplayName(stats.email, stats.name)}</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">{stats.email}</p>
+          <div className="flex items-center gap-6 mb-6">
+            {getAvatarPath(stats.email) && (
+              <Image
+                src={getAvatarPath(stats.email)!}
+                alt={`${getDisplayName(stats.email, stats.name)} Avatar`}
+                width={120}
+                height={120}
+                className="rounded-full"
+              />
+            )}
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">{getDisplayName(stats.email, stats.name)}</h1>
+              <p className="text-gray-600 dark:text-gray-400">{stats.email}</p>
+            </div>
+          </div>
+
+          {getBio(stats.email) && (
+            <div className="mb-6 p-6 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+              <h2 className="text-lg font-semibold text-purple-900 dark:text-purple-300 mb-3">About</h2>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{getBio(stats.email)}</p>
+            </div>
+          )}
 
           <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-6">
             <p className="text-sm text-blue-800 dark:text-blue-300 font-medium mb-2">Total Messages</p>
@@ -186,19 +242,9 @@ export default function UserPage() {
                       <span>{TAG_ICONS[tag as Tag]}</span>
                       <span>{tag}</span>
                     </span>
-                    <div className="flex items-center gap-3">
-                      <div className="w-48 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div
-                          className="bg-green-600 dark:bg-green-500 h-2 rounded-full"
-                          style={{
-                            width: `${(count / stats.totalMessages) * 100}%`
-                          }}
-                        ></div>
-                      </div>
-                      <span className="text-gray-900 dark:text-gray-100 font-semibold w-16 text-right">
-                        {count.toLocaleString()}
-                      </span>
-                    </div>
+                    <span className="text-gray-900 dark:text-gray-100 font-semibold w-16 text-right">
+                      {count.toLocaleString()}
+                    </span>
                   </div>
                 ))
               ) : (

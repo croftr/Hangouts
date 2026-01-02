@@ -15,7 +15,10 @@
       "Bash(node scripts/optimize-db.js:*)",
       "Bash(echo:*)",
       "Bash(gzip:*)",
-      "Bash(node scripts/fix-conversation-stoppers.js:*)"
+      "Bash(node scripts/fix-conversation-stoppers.js:*)",
+      "Bash(curl:*)",
+      "Bash(ls:*)",
+      "Bash(node:*)"
     ]
   }
 }
