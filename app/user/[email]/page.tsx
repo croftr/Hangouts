@@ -38,7 +38,7 @@ const TAG_ICONS: Record<Tag, string> = {
   'Transport': '🚗',
   'Food': '🍕',
   'Cables': '🔌',
-  'Animals': '🐾',
+  'Animals': '🐿️',
   'Woke': '✊',
   'Politically Incorrect': '🚫',
   'Gay': '🌈',

@@ -38,7 +38,7 @@ const TAG_ICONS: Record<Tag, string> = {
   'Transport': '🚗',
   'Food': '🍕',
   'Cables': '🔌',
-  'Animals': '🐾',
+  'Animals': '🐿️',
   'Woke': '✊',
   'Politically Incorrect': '🚫',
   'Gay': '🌈',
@@ -162,7 +162,16 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-8">Pork Flumps and🐿️chops</h1>
+        <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 truncate">🐿️ Pork Flumps and chops</h1>
+          <Link
+            href="/leaderboard"
+            className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+          >
+            <span>🏆</span>
+            <span>Leaderboard</span>
+          </Link>
+        </div>
 
         {/* Search and Filter Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
@@ -216,11 +225,10 @@ export default function Home() {
               <button
                 key={tag}
                 onClick={() => toggleTag(tag)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
-                  selectedTags.includes(tag)
-                    ? TAG_COLORS[tag] + ' ring-2 ring-offset-2 dark:ring-offset-gray-800'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${selectedTags.includes(tag)
+                  ? TAG_COLORS[tag] + ' ring-2 ring-offset-2 dark:ring-offset-gray-800'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
               >
                 <span>{TAG_ICONS[tag]}</span>
                 <span>{tag}</span>
@@ -282,7 +290,6 @@ export default function Home() {
                       >
                         {getDisplayName(message.creator_email, message.creator_name)}
                       </Link>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{message.creator_email}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-600 dark:text-gray-400">{formatDate(message.created_timestamp)}</p>

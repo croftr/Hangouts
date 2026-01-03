@@ -37,7 +37,7 @@ const TAG_ICONS: Record<Tag, string> = {
   'Transport': '🚗',
   'Food': '🍕',
   'Cables': '🔌',
-  'Animals': '🐾',
+  'Animals': '🐿️',
   'Woke': '✊',
   'Politically Incorrect': '🚫',
   'Gay': '🌈',
@@ -66,6 +66,8 @@ export default function LeaderboardPage() {
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState<SortField>('totalMessages');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [selectedMobileTag, setSelectedMobileTag] = useState<Tag | null>(null);
+  const [selectedMobileYear, setSelectedMobileYear] = useState<string | null>(null);
 
   const getDisplayName = (email: string, name: string): string => {
     if (email === 'bobby@robincroft.com') {
@@ -158,6 +160,52 @@ export default function LeaderboardPage() {
     stats.some(user => user.messagesByTag[tag] > 0)
   );
 
+  // Set initial mobile tag when activeTags are loaded
+  useEffect(() => {
+    if (activeTags.length > 0 && !selectedMobileTag) {
+      setSelectedMobileTag(activeTags[0]);
+    }
+  }, [activeTags, selectedMobileTag]);
+
+  // Set initial mobile year when allYears are loaded
+  useEffect(() => {
+    if (allYears.length > 0 && !selectedMobileYear) {
+      setSelectedMobileYear(allYears[0]);
+    }
+  }, [allYears, selectedMobileYear]);
+
+  const UserAvatar = ({ email, name, size = 40 }: { email: string; name: string; size?: number }) => {
+    const avatarPath = getAvatarPath(email);
+
+    if (avatarPath) {
+      return (
+        <Image
+          src={avatarPath}
+          alt={`${getDisplayName(email, name)} Avatar`}
+          width={size}
+          height={size}
+          className="rounded-full"
+        />
+      );
+    }
+
+    return (
+      <div
+        className="rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center"
+        style={{ width: size, height: size }}
+      >
+        <svg
+          className="text-gray-500 dark:text-gray-400"
+          style={{ width: size * 0.6, height: size * 0.6 }}
+          fill="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+        </svg>
+      </div>
+    );
+  };
+
   const SortButton = ({ field, label }: { field: SortField; label: string }) => (
     <button
       onClick={() => handleSort(field)}
@@ -227,7 +275,7 @@ export default function LeaderboardPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left py-3 px-4 text-gray-700 dark:text-gray-300">Rank</th>
+                  <th className="hidden md:table-cell text-left py-3 px-4 text-gray-700 dark:text-gray-300">Rank</th>
                   <th className="text-left py-3 px-4 text-gray-700 dark:text-gray-300">User</th>
                   <th className="text-right py-3 px-4 text-gray-700 dark:text-gray-300">Messages</th>
                 </tr>
@@ -235,7 +283,7 @@ export default function LeaderboardPage() {
               <tbody>
                 {sortedStats.map((user, index) => (
                   <tr key={user.email} className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                    <td className="py-4 px-4">
+                    <td className="hidden md:table-cell py-4 px-4">
                       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 text-white font-bold">
                         {index + 1}
                       </div>
@@ -245,20 +293,12 @@ export default function LeaderboardPage() {
                         href={`/user/${encodeURIComponent(user.email)}`}
                         className="flex items-center gap-3 hover:underline"
                       >
-                        {getAvatarPath(user.email) && (
-                          <Image
-                            src={getAvatarPath(user.email)!}
-                            alt={`${getDisplayName(user.email, user.name)} Avatar`}
-                            width={40}
-                            height={40}
-                            className="rounded-full"
-                          />
-                        )}
+                        <UserAvatar email={user.email} name={user.name} size={40} />
                         <div>
                           <p className="font-semibold text-blue-600 dark:text-blue-400">
                             {getDisplayName(user.email, user.name)}
                           </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                          <p className="hidden md:block text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
                         </div>
                       </Link>
                     </td>
@@ -273,10 +313,73 @@ export default function LeaderboardPage() {
         </div>
 
         {/* Messages by Year */}
-        {allYears.length > 0 && (
+        {allYears.length > 0 && selectedMobileYear && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Messages by Year</h2>
-            <div className="overflow-x-auto">
+
+            {/* Mobile View - Single Year with Dropdown */}
+            <div className="lg:hidden mb-4">
+              <label htmlFor="mobile-year-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Select Year
+              </label>
+              <select
+                id="mobile-year-select"
+                value={selectedMobileYear}
+                onChange={(e) => setSelectedMobileYear(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {allYears.map(year => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Mobile View - Table with Single Year */}
+            <div className="lg:hidden overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-3 px-4 text-gray-700 dark:text-gray-300">User</th>
+                    <th className="text-right py-3 px-4 text-gray-700 dark:text-gray-300">
+                      <button
+                        onClick={() => handleSort(selectedMobileYear)}
+                        className="text-xs font-medium hover:underline focus:outline-none"
+                      >
+                        {selectedMobileYear}
+                        {sortBy === selectedMobileYear && (
+                          <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </button>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedStats.map(user => (
+                    <tr key={user.email} className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                      <td className="py-4 px-4">
+                        <Link
+                          href={`/user/${encodeURIComponent(user.email)}`}
+                          className="flex items-center gap-3 hover:underline"
+                        >
+                          <UserAvatar email={user.email} name={user.name} size={32} />
+                          <span className="font-medium text-blue-600 dark:text-blue-400">
+                            {getDisplayName(user.email, user.name)}
+                          </span>
+                        </Link>
+                      </td>
+                      <td className="py-4 px-4 text-right text-gray-900 dark:text-gray-100">
+                        {user.messagesByYear[selectedMobileYear]?.toLocaleString() || '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Desktop View - All Years */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
@@ -296,15 +399,7 @@ export default function LeaderboardPage() {
                           href={`/user/${encodeURIComponent(user.email)}`}
                           className="flex items-center gap-3 hover:underline"
                         >
-                          {getAvatarPath(user.email) && (
-                            <Image
-                              src={getAvatarPath(user.email)!}
-                              alt={`${getDisplayName(user.email, user.name)} Avatar`}
-                              width={32}
-                              height={32}
-                              className="rounded-full"
-                            />
-                          )}
+                          <UserAvatar email={user.email} name={user.name} size={32} />
                           <span className="font-medium text-blue-600 dark:text-blue-400">
                             {getDisplayName(user.email, user.name)}
                           </span>
@@ -324,10 +419,74 @@ export default function LeaderboardPage() {
         )}
 
         {/* Messages by Tag */}
-        {activeTags.length > 0 && (
+        {activeTags.length > 0 && selectedMobileTag && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Messages by Tag</h2>
-            <div className="overflow-x-auto">
+
+            {/* Mobile View - Single Tag with Dropdown */}
+            <div className="lg:hidden mb-4">
+              <label htmlFor="mobile-tag-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Select Tag
+              </label>
+              <select
+                id="mobile-tag-select"
+                value={selectedMobileTag}
+                onChange={(e) => setSelectedMobileTag(e.target.value as Tag)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {activeTags.map(tag => (
+                  <option key={tag} value={tag}>
+                    {TAG_ICONS[tag]} {tag}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Mobile View - Table with Single Tag */}
+            <div className="lg:hidden overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-3 px-4 text-gray-700 dark:text-gray-300">User</th>
+                    <th className="text-right py-3 px-4 text-gray-700 dark:text-gray-300">
+                      <button
+                        onClick={() => handleSort(selectedMobileTag)}
+                        className={`px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 hover:ring-2 hover:ring-offset-2 dark:hover:ring-offset-gray-800 transition-all ${TAG_COLORS[selectedMobileTag]}`}
+                      >
+                        <span>{TAG_ICONS[selectedMobileTag]}</span>
+                        <span>{selectedMobileTag}</span>
+                        {sortBy === selectedMobileTag && (
+                          <span className="ml-1 font-bold">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </button>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedStats.map(user => (
+                    <tr key={user.email} className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                      <td className="py-4 px-4">
+                        <Link
+                          href={`/user/${encodeURIComponent(user.email)}`}
+                          className="flex items-center gap-3 hover:underline"
+                        >
+                          <UserAvatar email={user.email} name={user.name} size={32} />
+                          <span className="font-medium text-blue-600 dark:text-blue-400">
+                            {getDisplayName(user.email, user.name)}
+                          </span>
+                        </Link>
+                      </td>
+                      <td className="py-4 px-4 text-right text-gray-900 dark:text-gray-100">
+                        {user.messagesByTag[selectedMobileTag] > 0 ? user.messagesByTag[selectedMobileTag].toLocaleString() : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Desktop View - All Tags */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
@@ -358,15 +517,7 @@ export default function LeaderboardPage() {
                           href={`/user/${encodeURIComponent(user.email)}`}
                           className="flex items-center gap-3 hover:underline"
                         >
-                          {getAvatarPath(user.email) && (
-                            <Image
-                              src={getAvatarPath(user.email)!}
-                              alt={`${getDisplayName(user.email, user.name)} Avatar`}
-                              width={32}
-                              height={32}
-                              className="rounded-full"
-                            />
-                          )}
+                          <UserAvatar email={user.email} name={user.name} size={32} />
                           <span className="font-medium text-blue-600 dark:text-blue-400">
                             {getDisplayName(user.email, user.name)}
                           </span>
